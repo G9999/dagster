@@ -466,6 +466,7 @@ def upload_logs(stop_event):
     # buildkite/azure testing pipelines. The check is present at upload to
     # allow for testing of logs being correctly written.
     if is_running_in_test():
+        print("RUNNING IN TEST!!")
         return
 
     try:
@@ -491,6 +492,7 @@ def upload_logs(stop_event):
                 )
 
             if log_size == 0 and log_queue_size == 0:
+                print("EMPTY LOGS")
                 return
 
             if not in_progress and (
@@ -507,11 +509,15 @@ def upload_logs(stop_event):
 
             stop_event.wait(600)  # Sleep for 10 minutes
     except Exception:  # pylint: disable=broad-except
-        pass
+        raise
+
+    print("DONE UPLOADING LOGSSSS")
 
 
 def _upload_logs(dagster_log_dir, log_size, dagster_log_queue_dir):
     """Send POST request to telemetry server with the contents of $DAGSTER_HOME/logs/ directory """
+
+    print("INNER UPLOAD LOGS")
     try:
         if log_size > 0:
             # Delete contents of dagster_log_queue_dir so that new logs can be copied over
@@ -529,6 +535,7 @@ def _upload_logs(dagster_log_dir, log_size, dagster_log_queue_dir):
             success = False
 
             while not success and retry_num <= max_retries:
+                print("ATTEMPT " + repr(retry_num))
                 with open(curr_full_path, "rb") as curr_file:
                     byte = curr_file.read()
 
@@ -543,4 +550,4 @@ def _upload_logs(dagster_log_dir, log_size, dagster_log_queue_dir):
                 os.remove(curr_full_path)
 
     except Exception:  # pylint: disable=broad-except
-        pass
+        raise

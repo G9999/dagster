@@ -152,6 +152,8 @@ def test_dagster_telemetry_upload(env):
     for handler in logger.handlers:
         logger.removeHandler(handler)
 
+    responses.add(responses.POST, DAGSTER_TELEMETRY_URL)
+
     with environ(env):
         with instance_for_test():
             runner = CliRunner()
@@ -165,7 +167,7 @@ def test_dagster_telemetry_upload(env):
             mock_stop_event = mock.MagicMock()
             mock_stop_event.is_set.return_value = False
 
-            def side_effect():
+            def side_effect(_):
                 mock_stop_event.is_set.return_value = True
 
             mock_stop_event.wait.side_effect = side_effect
